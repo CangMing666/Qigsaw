@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.util.ArraySet;
 import android.text.TextUtils;
 
 import com.iqiyi.android.qigsaw.core.common.FileUtil;
@@ -147,7 +146,7 @@ final class SplitInstallSupervisorImpl extends SplitInstallSupervisor {
             callback.onError(bundleErrorCode(errorCode));
             return;
         }
-        if (!isRequestInvalid(moduleNameList)) {
+        if (isRequestInvalid(moduleNameList)) {
             callback.onError(bundleErrorCode(SplitInstallInternalErrorCode.INVALID_REQUEST));
             return;
         }
@@ -259,7 +258,7 @@ final class SplitInstallSupervisorImpl extends SplitInstallSupervisor {
     }
 
     private int checkRequestErrorCode(List<String> moduleNames) {
-        if (!isRequestInvalid(moduleNames)) {
+        if (isRequestInvalid(moduleNames)) {
             return SplitInstallInternalErrorCode.INVALID_REQUEST;
         }
         if (!isModuleAvailable(moduleNames)) {
@@ -414,7 +413,7 @@ final class SplitInstallSupervisorImpl extends SplitInstallSupervisor {
     }
 
     private boolean isRequestInvalid(List<String> moduleNames) {
-        return dynamicFeatures != null && dynamicFeatures.containsAll(moduleNames);
+        return moduleNames == null || moduleNames.isEmpty() || dynamicFeatures == null || !dynamicFeatures.containsAll(moduleNames);
     }
 
     private boolean isModuleAvailable(List<String> moduleNames) {

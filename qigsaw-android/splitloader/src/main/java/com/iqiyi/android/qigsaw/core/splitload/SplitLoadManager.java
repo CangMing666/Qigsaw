@@ -26,18 +26,17 @@ package com.iqiyi.android.qigsaw.core.splitload;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
-import android.support.v4.util.ArraySet;
-import android.text.TextUtils;
 
-import com.iqiyi.android.qigsaw.core.common.ProcessUtil;
+import com.iqiyi.android.qigsaw.core.common.SplitLog;
 import com.iqiyi.android.qigsaw.core.splitload.listener.OnSplitLoadListener;
 
+import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,13 +45,15 @@ import static android.support.annotation.RestrictTo.Scope.LIBRARY_GROUP;
 @RestrictTo(LIBRARY_GROUP)
 public abstract class SplitLoadManager {
 
+    protected static final String TAG = "SplitLoadManager";
+
     private final Context context;
 
-    private final Set<Split> loadedSplits = new ArraySet<>();
+    private final Set<Split> loadedSplits = new HashSet<>(0);
 
-    private final Set<String> loadedSplitNames = new ArraySet<>();
+    private final Set<String> loadedSplitNames = new HashSet<>(0);
 
-    private final Set<String> loadedSplitApkPaths = new ArraySet<>();
+    private final Set<String> loadedSplitApkPaths = new HashSet<>(0);
 
     final String currentProcessName;
 
@@ -120,7 +121,16 @@ public abstract class SplitLoadManager {
      */
     Set<String> getLoadedSplitApkPaths() {
         synchronized (this) {
-            return loadedSplitApkPaths;
+            Set<String> loadedSplitApkPathsInsure = new HashSet<>(loadedSplitApkPaths.size());
+            for (String path : loadedSplitApkPaths) {
+                File file = new File(path);
+                if (file.exists() && file.isFile()) {
+                    loadedSplitApkPathsInsure.add(path);
+                } else {
+                    SplitLog.w(TAG, "Split has been loaded, but its file %s is not exist!", path);
+                }
+            }
+            return loadedSplitApkPathsInsure;
         }
     }
 
